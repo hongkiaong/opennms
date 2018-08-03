@@ -64,6 +64,14 @@ public interface OutageDao extends LegacyOnmsDao<OnmsOutage, Integer> {
     OnmsOutage currentOutageForService(OnmsMonitoredService service);
 
     /**
+     * <p>matchingOutages</p>
+     *
+     * @param selector a {@link org.opennms.netmgt.model.ServiceSelector} object.
+     * @return a {@link java.util.Collection} object.
+     */
+    Collection<OnmsOutage> matchingOutages(ServiceSelector selector);
+
+    /**
      * <p>matchingCurrentOutages</p>
      *
      * @param selector a {@link org.opennms.netmgt.model.ServiceSelector} object.
