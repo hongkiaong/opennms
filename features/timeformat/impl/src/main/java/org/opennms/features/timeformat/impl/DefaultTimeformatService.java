@@ -60,4 +60,9 @@ public class DefaultTimeformatService implements TimeformatService {
     public String format(Date date, ZoneId zoneId) {
         return format.format(date, zoneId);
     }
+
+    @Override
+    public String getFormatPattern() {
+        return format.getFormatPattern();
+    }
 }
