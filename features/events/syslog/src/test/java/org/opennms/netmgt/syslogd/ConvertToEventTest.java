@@ -291,6 +291,10 @@ public class ConvertToEventTest {
     }
 
     private static Event parseSyslog(final String name, final SyslogdConfig config, final String syslog) {
+        return parseSyslog(name, config, syslog);
+    }
+
+    private static Event parseSyslog(final String name, final SyslogdConfig config, final String syslog, Date receivedTimestamp) {
         try {
             ConvertToEvent convert = new ConvertToEvent(
                 DistPollerDao.DEFAULT_DIST_POLLER_ID,
@@ -298,6 +302,7 @@ public class ConvertToEventTest {
                 InetAddressUtils.ONE_TWENTY_SEVEN,
                 9999,
                 SyslogdTestUtils.toByteBuffer(syslog),
+                receivedTimestamp,
                 config
             );
             Event event = convert.getEvent();
@@ -372,5 +377,31 @@ public class ConvertToEventTest {
         assertEquals(0, middleByteTrimmed.position());
         assertEquals(3, middleByteTrimmed.limit());
         assertEquals(3, middleByteTrimmed.remaining());
+    }
+
+    /**
+     * TODO:
+     */
+    @Test
+    public void testNoTimestampInMessage()
+    {
+        // Create a custom radix tree parser that can handle our message that contains no timestamp
+        RadixTreeParser radixParser = new RadixTreeParser();
+        radixParser.teach(GrokParserStageSequenceBuilder.parseGrok("%{STRING:message}").toArray(new ParserStage[0]));
+        RadixTreeSyslogParser.setRadixParser(radixParser);
+        // TODO: Reset the radix parser
+
+        // TODO:
+        SyslogConfigBean radixConfig = new SyslogConfigBean();
+        radixConfig.setParser("org.opennms.netmgt.syslogd.RadixTreeSyslogParser");
+        radixConfig.setDiscardUei("DISCARD-MATCHING-MESSAGES");
+
+        // TODO:
+        Date now = new Date();
+        String syslogMessage = "%CDP-4-NATIVE_VLAN_MISMATCH: Native VLAN mismatch discovered on GigabitEthernet5/9 (75), with switch.fqdn.com GigabitEthernet2/4/21 (2)";
+        Event event = parseSyslog("testNoTimestampInMessage", radixConfig, syslogMessage, now);
+        Date eventTime = event.getTime();
+        assertNotNull(event.getTime());
+        assertEquals(eventTime, now);
     }
 }
